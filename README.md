@@ -163,11 +163,11 @@ Unlike static documentation that becomes outdated as the API evolves, HATEOAS li
 
 ### Question 2.1 — Room List Return Format
 
-> When returning a list of rooms, what are the implications of returning only IDs versus returning full room objects? Consider network bandwidth and client-side processing.
+> When returning a list of rooms, what are the implications of returning only IDs versus returning full room objects? Consider network bandwidth and client side processing.
 
 Returning only IDs forces clients to make N+1 additional requests to get room details, increasing server load and latency. For a campus with thousands of rooms, one list request would spawn thousands of individual detail requests, which is especially problematic over mobile networks.
 
-Returning full room objects avoids the extra requests but transfers all fields — including the complete `sensorIds` list — for every room in every response. Most clients, such as a dashboard showing a room selection menu, only need the name and ID. Forcing all clients to download and parse complete objects wastes bandwidth and increases memory consumption on lower-powered devices.
+Returning full room objects avoids the extra requests but transfers all fields — including the complete `sensorIds` list  for every room in every response. Most clients, such as a dashboard showing a room selection menu, only need the name and ID. Forcing all clients to download and parse complete objects wastes bandwidth and increases memory consumption on lower-powered devices.
 
 This API returns **summary objects** with only `id`, `name`, and a HATEOAS `href` link:
 
@@ -189,11 +189,11 @@ Clients get enough data for common use cases and can follow the `href` link for 
 
 > Is the DELETE operation idempotent in your implementation? Provide a detailed justification by describing what happens if a client mistakenly sends the exact same DELETE request multiple times.
 
-The DELETE operation is **idempotent** in terms of server-side state. The first request removes the room and returns `204 No Content`. Subsequent identical requests find the room no longer exists — the service throws `NotFoundException` which the `GlobalExceptionMapper` returns as `404 Not Found`.
+The DELETE operation is **idempotent** in terms of server side state. The first request removes the room and returns `204 No Content`. Subsequent identical requests find the room no longer exists   the service throws `NotFoundException` which the `GlobalExceptionMapper` returns as `404 Not Found`.
 
-The server state after the first request — the room does not exist — is identical after any subsequent request. This satisfies idempotency even though the response code changes from `204` to `404`, because idempotency concerns the state outcome, not the response code.
+The server state after the first request the room does not exist  is identical after any subsequent request. This satisfies idempotency even though the response code changes from `204` to `404`, because idempotency concerns the state outcome, not the response code.
 
-This behaviour makes retries safe, which is important for unreliable networks where clients may retry a request after a timeout without knowing whether the original reached the server. The worst outcome is a `404` confirming the room was already gone — not a dangerous or confusing side effect.
+This behaviour makes retries safe, which is important for unreliable networks where clients may retry a request after a timeout without knowing whether the original reached the server. The worst outcome is a `404` confirming the room was already gone  not a dangerous or confusing side effect.
 
 ---
 
@@ -215,9 +215,9 @@ This protects the API from malformed or unexpected input formats and prevents co
 
 > Contrast @QueryParam filtering with an alternative design where type is part of the URL path. Why is the query parameter approach superior?
 
-Path parameters identify **specific resources** — for example `/sensors/TEMP-01` identifies one sensor. Query parameters **filter collections** — for example `/sensors?type=Temperature` narrows the collection by an attribute. Conflating these two concepts leads to URL designs that misrepresent the domain model.
+Path parameters identify **specific resources** — for example `/sensors/TEMP-01` identifies one sensor. Query parameters **filter collections**  for example `/sensors?type=Temperature` narrows the collection by an attribute. Conflating these two concepts leads to URL designs that misrepresent the domain model.
 
-Using `/sensors/type/CO2` as a path incorrectly implies that `type/CO2` is a hierarchical sub-resource that exists as a named entity below `sensors`. It also requires a separate URL pattern to retrieve all sensors with no filter, creating redundant routes and duplicate handler code.
+Using `/sensors/type/CO2` as a path incorrectly implies that `type/CO2` is a hierarchical sub resource that exists as a named entity below `sensors`. It also requires a separate URL pattern to retrieve all sensors with no filter, creating redundant routes and duplicate handler code.
 
 Query parameters are naturally optional, support multiple filters composing cleanly (`?type=CO2&status=ACTIVE`), and keep the endpoint URL consistent. Both `GET /api/v1/sensors` and `GET /api/v1/sensors?type=Temperature` route to the same method:
 
@@ -230,7 +230,7 @@ public Response getAllSensors(@QueryParam("type") String type) {
 }
 ```
 
-This follows REST conventions — query parameters are specifically designed for filtering, searching, and paginating collections — and produces cleaner, more maintainable code.
+This follows REST conventions — query parameters are specifically designed for filtering, searching, and paginating collections  and produces cleaner, more maintainable code.
 
 ---
 
@@ -238,7 +238,7 @@ This follows REST conventions — query parameters are specifically designed for
 
 > Discuss the architectural benefits of the Sub-Resource Locator pattern. How does it help manage complexity in large APIs?
 
-The Sub-Resource Locator pattern allows a resource class to delegate handling of a nested path to a separate, dedicated class. The locator method carries only a `@Path` annotation — no HTTP verb — so the JAX-RS runtime delegates further request matching to the returned object rather than treating the method itself as a direct handler.
+The Sub-Resource Locator pattern allows a resource class to delegate handling of a nested path to a separate, dedicated class. The locator method carries only a `@Path` annotation  no HTTP verb so the JAX-RS runtime delegates further request matching to the returned object rather than treating the method itself as a direct handler.
 
 In this API, `SensorResource` delegates all reading operations to `SensorReadingResource`:
 
@@ -249,9 +249,9 @@ public SensorReadingResource getReadingResource(@PathParam("sensorId") String se
 }
 ```
 
-Without this pattern, all reading endpoints would be defined inside `SensorResource`. As the API grows — adding pagination, date-range filtering, or reading aggregation — `SensorResource` would become a massive class mixing sensor-level and reading-level concerns. Finding, modifying, or testing specific logic becomes error-prone and slow.
+Without this pattern, all reading endpoints would be defined inside `SensorResource`. As the API grows  adding pagination, date range filtering, or reading aggregation `SensorResource` would become a massive class mixing sensor level and reading level concerns. Finding, modifying, or testing specific logic becomes error-prone and slow.
 
-Separating the classes gives each one a single, clear responsibility. The `sensorId` is passed via the constructor, giving all methods in `SensorReadingResource` automatic access to their context without re-extracting path parameters in every method. In a team environment, two developers can work on these classes simultaneously without merge conflicts. In testing, `SensorReadingResource` can be instantiated and unit tested in complete isolation. These benefits scale significantly as the API grows deeper in resource nesting.
+Separating the classes gives each one a single, clear responsibility. The `sensorId` is passed via the constructor, giving all methods in `SensorReadingResource` automatic access to their context without re extracting path parameters in every method. In a team environment, two developers can work on these classes simultaneously without merge conflicts. In testing, `SensorReadingResource` can be instantiated and unit tested in complete isolation. These benefits scale significantly as the API grows deeper in resource nesting.
 
 ---
 
@@ -261,11 +261,11 @@ Separating the classes gives each one a single, clear responsibility. The `senso
 
 `404 Not Found` means the resource identified by the **requested URL** does not exist. When posting a sensor to `POST /api/v1/sensors`, the URL is valid and the endpoint exists. Returning `404` would mislead the client into thinking it sent the request to the wrong URL, which is not the problem.
 
-The real issue is inside the request body. The JSON is syntactically valid, all required fields are present, and the content type is correct. The problem is that the `roomId` value references a room that does not exist — a semantic violation of referential integrity, not a routing or format failure.
+The real issue is inside the request body. The JSON is syntactically valid, all required fields are present, and the content type is correct. The problem is that the `roomId` value references a room that does not exist  a semantic violation of referential integrity, not a routing or format failure.
 
 `422 Unprocessable Entity` (RFC 4918) signals that the server understood the request, received it at the correct URL, parsed the JSON successfully, but cannot process it due to a business rule violation. This accurately describes the scenario.
 
-The distinction has direct practical importance for client developers. A `404` tells the client to check its URL. A `422` tells the client to check the data inside its request body — specifically the `roomId` field. This gives actionable, unambiguous information for debugging and allows client applications to handle data validation errors distinctly from routing errors.
+The distinction has direct practical importance for client developers. A `404` tells the client to check its URL. A `422` tells the client to check the data inside its request body  specifically the `roomId` field. This gives actionable, unambiguous information for debugging and allows client applications to handle data validation errors distinctly from routing errors.
 
 ---
 
@@ -285,7 +285,7 @@ The `GlobalExceptionMapper` eliminates all of this by catching every `Throwable`
 ErrorResponse error = new ErrorResponse("An unexpected server error occurred.", 500);
 ```
 
-Full exception details remain in server-side logs via `ex.printStackTrace()` for developers, while attackers receive no exploitable intelligence from the HTTP response.
+Full exception details remain in server side logs via `ex.printStackTrace()` for developers, while attackers receive no exploitable intelligence from the HTTP response.
 
 ---
 
@@ -293,7 +293,7 @@ Full exception details remain in server-side logs via `ex.printStackTrace()` for
 
 > Why is it advantageous to use JAX-RS filters for logging rather than manually inserting Logger.info() statements inside every single resource method?
 
-Logging is a cross-cutting concern — it applies across the entire application but is not the responsibility of any individual component. Manual logging violates the DRY (Don't Repeat Yourself) principle, creates a large maintenance surface, and risks inconsistent coverage. When new endpoints are added, developers may forget to include log statements, creating silent gaps. If an exception is thrown before the response log line is reached, that line never executes, so error responses frequently go unlogged.
+Logging is a cross-cutting concern - it applies across the entire application but is not the responsibility of any individual component. Manual logging violates the DRY (Don't Repeat Yourself) principle, creates a large maintenance surface, and risks inconsistent coverage. When new endpoints are added, developers may forget to include log statements, creating silent gaps. If an exception is thrown before the response log line is reached, that line never executes, so error responses frequently go unlogged.
 
 The `ApiLoggingFilter` solves all of these problems in a single class registered once with `@Provider`:
 
