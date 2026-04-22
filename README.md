@@ -166,7 +166,7 @@ Everything is stored in memory using ConcurrentHashMap. Data resets when the ser
 
 ## Report Questions
 
-### Question 1.1 - JAX-RS Resource Lifecycle
+### Question 1.1 
 
 > In your report, explain the default lifecycle of a JAX-RS Resource class. Is a new instance instantiated for every incoming request, or does the runtime treat it as a singleton? Elaborate on how this architectural decision impacts the way you manage and synchronize your in-memory data structures (maps/lists) to prevent data loss or race conditions.
 
@@ -197,7 +197,7 @@ private final Map<String, List<SensorReading>> sensorReadingStore = new Concurre
 
 ConcurrentHashMap handles concurrent reads and writes safely without corrupting the data. The reading lists are also wrapped with Collections.synchronizedList() so concurrent additions to individual lists are safe too.
 
-### Question 1.2 - HATEOAS
+### Question 1.2
 
 > Why is the provision of Hypermedia considered a hallmark of advanced RESTful design? How does this approach benefit client developers compared to static documentation?
 
@@ -221,7 +221,7 @@ The benefit over static documentation is that the links are always correct becau
 
 With HATEOAS the client only needs to know one starting point which is /api/v1/ and it can discover everything from there by following the links. If a URL changes the client doesnt need a code change because it is following the link name not a hardcoded string.
 
-### Question 2.1 - Room List Format
+### Question 2.1 
 
 > When returning a list of rooms, what are the implications of returning only IDs versus returning the full room objects? Consider network bandwidth and client side processing.
 
@@ -243,7 +243,7 @@ This API returns summary objects with just the id, name, and an href link:
 
 This way the client gets what it needs for most use cases without extra requests, and if it needs the full details it can follow the href. The href also means the client doesnt have to construct the URL itself which ties into the HATEOAS approach.
 
-### Question 2.2 - DELETE Idempotency
+### Question 2.2 
 
 > Is the DELETE operation idempotent in your implementation? Provide a detailed justification by describing what happens if a client mistakenly sends the exact same DELETE request for a room multiple times.
 
@@ -255,7 +255,7 @@ The server state is the same after the first call and every call after it, the r
 
 This matters in practice because networks are unreliable and clients sometimes retry requests if they dont get a response in time. With this implementation retrying a DELETE is completely safe. The worst that happens is the client gets a 404 back which tells them the room is already gone, which is true. There are no dangerous side effects from retrying.
 
-### Question 3.1 - @Consumes and Content-Type
+### Question 3.1 
 
 > We explicitly use the @Consumes(MediaType.APPLICATION_JSON) annotation on the POST method. Explain the technical consequences if a client attempts to send data in a different format, such as text/plain or application/xml. How does JAX-RS handle this mismatch?
 
@@ -267,7 +267,7 @@ The way this works under the hood is through the MessageBodyReader system. JAX-R
 
 This is useful because clients get a clear error code telling them exactly what went wrong. It also protects against things like XXE injection attacks where someone might try to send malicious XML to an endpoint that is expecting JSON.
 
-### Question 3.2 - QueryParam vs Path Parameter
+### Question 3.2 
 
 > You implemented this filtering using @QueryParam. Contrast this with an alternative design where the type is part of the URL path (e.g., /api/v1/sensors/type/CO2). Why is the query parameter approach generally considered superior for filtering and searching collections?
 
@@ -288,7 +288,7 @@ public Response getAllSensors(@QueryParam("type") String type) {
 
 The type parameter is optional by nature. When it is not there you get everything. When it is there you get filtered results. Adding more filters is also easy, you just add more query parameters like ?type=CO2&status=ACTIVE without changing the URL structure or adding new methods. With path parameters you would need a new route for every filter combination which gets messy fast.
 
-### Question 4.1 - Sub-Resource Locator Pattern
+### Question 4.1 
 
 > Discuss the architectural benefits of the Sub-Resource Locator pattern. How does delegating logic to separate classes help manage complexity in large APIs compared to defining every nested path in one massive controller class?
 
@@ -309,7 +309,7 @@ By separating them each class has one job. SensorResource handles sensor registr
 
 The sensor existence check also only needs to be written once in the locator and it covers all reading operations automatically. Two developers can also work on these two classes at the same time without stepping on each other. And SensorReadingResource can be tested on its own by just creating an instance with a known sensorId.
 
-### Question 5.1 - 422 vs 404
+### Question 5.1 
 
 > Why is HTTP 422 often considered more semantically accurate than a standard 404 when the issue is a missing reference inside a valid JSON payload?
 
@@ -321,7 +321,7 @@ The actual problem is inside the request body. The JSON is valid, the content ty
 
 From a practical point of view this matters because a 404 tells the client to check its URL and a 422 tells the client to check its data. That distinction saves time when debugging. It also lets client applications handle these two types of errors differently in their code, routing errors versus validation errors.
 
-### Question 5.2 - Stack Trace Security Risks
+### Question 5.2 
 
 > From a cybersecurity standpoint, explain the risks associated with exposing internal Java stack traces to external API consumers. What specific information could an attacker gather from such a trace?
 
@@ -341,7 +341,7 @@ ErrorResponse error = new ErrorResponse("An unexpected server error occurred.", 
 
 The full exception still gets printed to the server logs with ex.printStackTrace() so developers can debug it, but the client never sees anything useful. This separates what the server knows from what the outside world gets to see.
 
-### Question 5.3 - Filters vs Manual Logging
+### Question 5.3 
 
 > Why is it advantageous to use JAX-RS filters for cross-cutting concerns like logging rather than manually inserting Logger.info() statements inside every single resource method?
 
