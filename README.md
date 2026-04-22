@@ -122,7 +122,7 @@ This API uses **in-memory storage** via `ConcurrentHashMap` as required. All dat
 
 > Explain the default lifecycle of a JAX-RS Resource class. Is a new instance instantiated for every incoming request, or does the runtime treat it as a singleton? Elaborate on how this impacts in-memory data management.
 
-JAX-RS resource classes follow a **request-scoped lifecycle** by default. A new instance is created for every incoming HTTP request and discarded after the response is sent. This means instance variables cannot store shared application data — any data stored there would be destroyed at the end of each request.
+JAX-RS resource classes follow a **request-scoped lifecycle** by default. A new instance is created for every incoming HTTP request and discarded after the response is sent. This means instance variables cannot store shared application data  any data stored there would be destroyed at the end of each request.
 
 To manage shared state, this API uses a **Singleton `DataStore` class** with `ConcurrentHashMap` collections. The Singleton pattern ensures one shared instance persists across all requests regardless of how many resource instances are created and destroyed:
 
@@ -135,7 +135,7 @@ public static synchronized DataStore getInstance() {
 }
 ```
 
-`ConcurrentHashMap` provides thread-safe operations for concurrent access from multiple request threads, preventing race conditions and data corruption. Apache Tomcat processes multiple requests simultaneously on separate threads, so a standard `HashMap` would be unsafe — concurrent modifications can corrupt its internal state causing `ConcurrentModificationException` or lost updates. Individual reading lists are also wrapped with `Collections.synchronizedList()` to protect concurrent modifications to list contents.
+`ConcurrentHashMap` provides thread-safe operations for concurrent access from multiple request threads, preventing race conditions and data corruption. Apache Tomcat processes multiple requests simultaneously on separate threads, so a standard `HashMap` would be unsafe  concurrent modifications can corrupt its internal state causing `ConcurrentModificationException` or lost updates. Individual reading lists are also wrapped with `Collections.synchronizedList()` to protect concurrent modifications to list contents.
 
 ---
 
@@ -167,7 +167,7 @@ Unlike static documentation that becomes outdated as the API evolves, HATEOAS li
 
 Returning only IDs forces clients to make N+1 additional requests to get room details, increasing server load and latency. For a campus with thousands of rooms, one list request would spawn thousands of individual detail requests, which is especially problematic over mobile networks.
 
-Returning full room objects avoids the extra requests but transfers all fields — including the complete `sensorIds` list  for every room in every response. Most clients, such as a dashboard showing a room selection menu, only need the name and ID. Forcing all clients to download and parse complete objects wastes bandwidth and increases memory consumption on lower-powered devices.
+Returning full room objects avoids the extra requests but transfers all fields  including the complete `sensorIds` list  for every room in every response. Most clients, such as a dashboard showing a room selection menu, only need the name and ID. Forcing all clients to download and parse complete objects wastes bandwidth and increases memory consumption on lower powered devices.
 
 This API returns **summary objects** with only `id`, `name`, and a HATEOAS `href` link:
 
@@ -230,7 +230,7 @@ public Response getAllSensors(@QueryParam("type") String type) {
 }
 ```
 
-This follows REST conventions — query parameters are specifically designed for filtering, searching, and paginating collections  and produces cleaner, more maintainable code.
+This follows REST conventions  query parameters are specifically designed for filtering, searching, and paginating collections  and produces cleaner, more maintainable code.
 
 ---
 
