@@ -41,6 +41,16 @@ This API follows a clean three-layer separation of concerns:
 When a business rule is violated, the service layer throws a custom exception. Exception mappers then convert these into proper HTTP status codes (409, 422, 403, 404, 500) with clean JSON error bodies. The `GlobalExceptionMapper` acts as a safety net, ensuring no raw stack traces ever leak to clients.
 
 This separation makes the API testable, maintainable, and secure.
+###  API Endpoint Documentation
+
+| Resource      | Path                                     | Method        | Description                                      |
+| :------------ | :--------------------------------------- | :------------ | :----------------------------------------------- |
+| **Discovery** | `/api/v1`                                | `GET`         | Entry point with HATEOAS navigation links        |
+| **Rooms** | `/api/v1/rooms`                          | `GET`, `POST` | Manage campus rooms and track capacity           |
+| **Room Detail**| `/api/v1/rooms/{roomId}`                 | `GET`, `DELETE`| Retrieve or remove a specific room (Idempotent)  |
+| **Sensors** | `/api/v1/sensors`                        | `GET`, `POST` | Manage IoT sensors (Supports `?type=` filter)    |
+| **Sensor Detail**| `/api/v1/sensors/{sensorId}`           | `GET`         | Retrieve metadata for a specific sensor          |
+| **Readings** | `/api/v1/sensors/{sensorId}/readings`    | `GET`, `POST` | Historical time-series data (Sub-resource)       |
 
 ## Build and Deployment
 
