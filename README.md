@@ -30,6 +30,17 @@ The Smart Campus API is a RESTful web service built using JAX-RS (Jersey) to man
 - **Java Version:** Java 8
 
 ---
+## API Design Architecture
+
+This API follows a clean three-layer separation of concerns:
+
+- **Resource Layer** (`SensorRoomResource`, `SensorResource`, etc.) - Handles HTTP requests/responses, input validation, and HATEOAS links. No business logic here.
+- **Service Layer** (`RoomService`, `SensorService`, `SensorReadingService`) - Contains all business rules: blocking room deletion if sensors exist, preventing sensor registration with invalid roomIds, rejecting readings when sensors are under maintenance, and detecting duplicate IDs.
+- **Storage Layer** (`DataStore` Singleton with `ConcurrentHashMap`) - Thread-safe in-memory data persistence.
+
+When a business rule is violated, the service layer throws a custom exception. Exception mappers then convert these into proper HTTP status codes (409, 422, 403, 404, 500) with clean JSON error bodies. The `GlobalExceptionMapper` acts as a safety net, ensuring no raw stack traces ever leak to clients.
+
+This separation makes the API testable, maintainable, and secure.
 
 ## Build and Deployment
 
